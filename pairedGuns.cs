@@ -15,8 +15,14 @@ public class PairedGuns : MonoBehaviour
         wm = base.GetComponentInChildren<WeaponManager>();
         foreach (var gun in wm.GetCombinedEquips())
         {
+            if (gun == null)
+                continue;
             if (gun is HPEquipGun)
+            {
                 guns.Add(((HPEquipGun)gun).gun);
+                if (gun.hardpointIdx != 0)
+                    gun.jettisonable = true;
+            }
             ((HPEquipGun)gun).gun.OnSetFire.AddListener(new UnityAction<bool>(setAllFire));
         }
     }
@@ -26,6 +32,8 @@ public class PairedGuns : MonoBehaviour
             return;
         foreach (var gun in guns)
         {
+            if (gun == null)
+                continue;
             gun.SetFire(firing);
         }
     }

@@ -1,16 +1,17 @@
 ﻿using Harmony;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-class LOL : VTOLMOD
+class AEAT : VTOLMOD
 {
     public static bool buttonMade = false;
+    public static CampaignSave trueSave = null;
     public static string path = "afighter";
-    public static Text text;
-    public static bool configInit = false;
     public static infAmmo inf;
     public static MFDPage mfd;
     public static MFD lastMFD = null;
@@ -19,6 +20,8 @@ class LOL : VTOLMOD
     public static MFDPortalManager MFDP;
     public static Text text1;
     public static Text text2;
+    public static PlayerVehicle selectedVehicle;
+    private static bool patched = false;
     private IEnumerator main()
     {
         while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene)
@@ -27,7 +30,6 @@ class LOL : VTOLMOD
         }
         // Main code here
         buttonMade = false;
-        text = null;
         Debug.Log("AAAAAAAA");
         wm = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<WeaponManager>();
         inf = VTOLAPI.GetPlayersVehicleGameObject().AddComponent<infAmmo>();
@@ -54,8 +56,8 @@ class LOL : VTOLMOD
                 newButton.label = "infAmmo";
                 newButton.OnPress.AddListener(new UnityAction(() =>
                 {
-                    LOL.inf.enabled = !LOL.inf.enabled;
-                    mfd.mfd.buttons[13].GetComponentInChildren<Text>().color = LOL.inf.enabled ? Color.green : Color.red;
+                    AEAT.inf.enabled = !AEAT.inf.enabled;
+                    mfd.mfd.buttons[13].GetComponentInChildren<Text>().color = AEAT.inf.enabled ? Color.green : Color.red;
                 }));
                 if (mfd.mfd == null)
                 {
@@ -67,14 +69,14 @@ class LOL : VTOLMOD
                 newButton2.label = "pairGuns";
                 newButton2.OnPress.AddListener(new UnityAction(() =>
                 {
-                    LOL.paired.enabled = !LOL.paired.enabled;
+                    AEAT.paired.enabled = !AEAT.paired.enabled;
                     Debug.Log("Button pressed.");
-                    mfd.mfd.buttons[11].GetComponentInChildren<Text>().color = LOL.paired.enabled && wm.equippedGun ? Color.green : Color.red;
+                    mfd.mfd.buttons[11].GetComponentInChildren<Text>().color = AEAT.paired.enabled && wm.equippedGun ? Color.green : Color.red;
                 }));
                 mfd.SetPageButton(newButton);
                 mfd.SetPageButton(newButton2);
-                mfd.mfd.buttons[13].GetComponentInChildren<Text>().color = LOL.inf.enabled ? Color.green : Color.red;
-                mfd.mfd.buttons[11].GetComponentInChildren<Text>().color = LOL.paired.enabled ? Color.green : Color.red;
+                mfd.mfd.buttons[13].GetComponentInChildren<Text>().color = AEAT.inf.enabled ? Color.green : Color.red;
+                mfd.mfd.buttons[11].GetComponentInChildren<Text>().color = AEAT.paired.enabled ? Color.green : Color.red;
             }));
             mfd.OnDeactivatePage.AddListener(new UnityAction(() =>
             {
@@ -88,8 +90,8 @@ class LOL : VTOLMOD
         }
         else
         {
-            LOL.MFDP = wm.gameObject.GetComponentInChildren<MFDPortalManager>();
-            MFDPStoresManagement MFDP = (MFDPStoresManagement)LOL.MFDP.gameObject.GetComponentInChildren<MFDPortalManager>().pages[5];
+            AEAT.MFDP = wm.gameObject.GetComponentInChildren<MFDPortalManager>();
+            MFDPStoresManagement MFDP = (MFDPStoresManagement)AEAT.MFDP.gameObject.GetComponentInChildren<MFDPortalManager>().pages[5];
             Debug.Log("got MFPD");
             GameObject toCopy = null;
             foreach (var resource in Resources.FindObjectsOfTypeAll<VRInteractable>())
@@ -106,14 +108,14 @@ class LOL : VTOLMOD
             }
             GameObject emptyButton = Instantiate(toCopy, MFDP.displayObj.gameObject.transform);
             RectTransform rt = emptyButton.GetComponent<RectTransform>();
-            LOL.text1 = emptyButton.gameObject.GetComponentInChildren<Text>();
+            AEAT.text1 = emptyButton.gameObject.GetComponentInChildren<Text>();
             rt.localPosition = new Vector3(rt.localPosition.x - 50, rt.localPosition.y, rt.localPosition.z);
             rt.localScale = new Vector3(rt.localScale.x * 0.85f, rt.localScale.y * 0.85f, rt.localScale.z * 0.85f);
             rt.GetComponentInChildren<Image>().color = Color.black;
             Debug.Log("instantiate");
             VRInteractable interactable = emptyButton.GetComponentInChildren<VRInteractable>();
             Debug.Log("vr interactable");
-            text = emptyButton.GetComponentInChildren<Text>();
+            Text text = emptyButton.GetComponentInChildren<Text>();
             Debug.Log("text");
             text.text = "infAmmo";
             Debug.Log("infAmmo");
@@ -121,18 +123,19 @@ class LOL : VTOLMOD
             Debug.Log("new UnityEvent()");
             interactable.interactableName = "Toggle infinite ammo";
             Debug.Log("toggle infinite ammo");
-            interactable.OnInteract.AddListener(new UnityAction(() => {
-                LOL.inf.enabled = !LOL.inf.enabled;
-                LOL.MFDP.PlayInputSound();
-                LOL.text1.color = LOL.inf.enabled ? Color.green : Color.red;
+            interactable.OnInteract.AddListener(new UnityAction(() =>
+            {
+                AEAT.inf.enabled = !AEAT.inf.enabled;
+                AEAT.MFDP.PlayInputSound();
+                AEAT.text1.color = AEAT.inf.enabled ? Color.green : Color.red;
             }));
             Debug.Log("listener");
-            LOL.text1.color = LOL.inf.enabled ? Color.green : Color.red;
+            AEAT.text1.color = AEAT.inf.enabled ? Color.green : Color.red;
 
             GameObject emptyButton2 = Instantiate(toCopy, MFDP.displayObj.gameObject.transform);
             RectTransform rt2 = emptyButton2.GetComponent<RectTransform>();
             rt2.localPosition = new Vector3(rt2.localPosition.x - 85, rt.localPosition.y, rt.localPosition.z);
-            rt2.localScale = new Vector3(rt2.localScale.x  * 0.85f, rt2.localScale.y * 0.85f, rt2.localScale.z * 0.85f);
+            rt2.localScale = new Vector3(rt2.localScale.x * 0.85f, rt2.localScale.y * 0.85f, rt2.localScale.z * 0.85f);
             rt2.GetComponentInChildren<Image>().color = Color.black;
             Debug.Log("instantiate");
             VRInteractable interactable2 = emptyButton2.GetComponentInChildren<VRInteractable>();
@@ -145,14 +148,25 @@ class LOL : VTOLMOD
             Debug.Log("new UnityEvent()");
             interactable2.interactableName = "Pair All Guns";
             Debug.Log("Pair all guns");
-            interactable2.OnInteract.AddListener(new UnityAction(() => {
-                LOL.paired.enabled = !LOL.paired.enabled;
-                LOL.MFDP.PlayInputSound();
-                LOL.text2.color = LOL.paired.enabled? Color.green : Color.red;
+            interactable2.OnInteract.AddListener(new UnityAction(() =>
+            {
+                AEAT.paired.enabled = !AEAT.paired.enabled;
+                AEAT.MFDP.PlayInputSound();
+                AEAT.text2.color = AEAT.paired.enabled ? Color.green : Color.red;
             }));
-            LOL.text2.color = LOL.paired.enabled ? Color.green : Color.red;
+            AEAT.text2.color = AEAT.paired.enabled ? Color.green : Color.red;
         }
 
+    }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.K) && false)
+        {
+            Actor[] allActorsShallow = (Actor[])TargetManager.instance.allActors.ToArray().Clone();
+            foreach (Actor actor in allActorsShallow)
+                if (actor.team == Teams.Enemy)
+                    actor.health?.Kill(); // I did this in korengal valley to make sure that campaign saves worked with different vehicles
+        }
     }
     public void DoMain()
     {
@@ -164,6 +178,9 @@ class LOL : VTOLMOD
     }
     public override void ModLoaded()
     {
+        if (patched)
+            return;
+        patched = true;
         HarmonyInstance.Create("Temperz.EQUIPEVERYTHING").PatchAll();
         VTOLAPI.SceneLoaded += SceneChanged; // So when the scene is changed SceneChanged is called
         VTOLAPI.MissionReloaded += DoMain; // So when the mission is reloaded DoMain is called
@@ -176,6 +193,11 @@ class LOL : VTOLMOD
         {
             StartCoroutine(main());
         }
+        else if (scenes == VTOLScenes.ReadyRoom)
+        {
+            trueSave = null;
+            selectedVehicle = null;
+        }
     }
 }
 [HarmonyPatch(typeof(LoadoutConfigurator), "EquipCompatibilityMask")]
@@ -183,13 +205,15 @@ public static class patch0
 {
     public static bool Prefix(HPEquippable equip)
     {
-        if (!LOL.buttonMade && VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
+        if (PilotSaveManager.currentScenario.equipConfigurable == false)
+            return true;
+        if (!AEAT.buttonMade && VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
         {
-            GameObject button = GameObject.Instantiate(GameObject.Find("RecenterCanvas"));
             foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
             {
                 if (!controller.isLeft)
                 {
+                    GameObject button = GameObject.Instantiate(GameObject.Find("RecenterCanvas"));
                     button.transform.SetParent(controller.transform);
                     button.transform.localPosition = new Vector3(0.101411f, 0.02100047f, -0.128024f);
                     button.transform.localRotation = Quaternion.Euler(-5.834f, 283.583f, 328.957f);
@@ -197,48 +221,73 @@ public static class patch0
                     VRInteractable bInteractable = button.GetComponentInChildren<VRInteractable>();
                     Text text = button.GetComponentInChildren<Text>();
                     text.transform.localScale = text.transform.localScale * 0.75f;
-                    LOL.path = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<WeaponManager>().resourcePath.ToLower();
-                    LOL.path = LOL.path.Remove(0, 9);
-                    text.text = "Weapons: " + LOL.path;
-                    LOL.text = text;
-                    bInteractable.interactableName = "Switch vehicle weapons.";
+                    AEAT.path = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<WeaponManager>().resourcePath.ToLower();
+                    AEAT.path = AEAT.path.Remove(0, 9);
+                    text.text = "A.E.A.T. Super Menu";
+                    bInteractable.interactableName = "Switch vehicle weapons\n (Current Weapons: " + AEAT.path + ")";
                     bInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
-                    bInteractable.OnInteract.AddListener(new UnityEngine.Events.UnityAction(() =>
+                    bInteractable.transform.localPosition = new Vector3(-141f, -62f, -3f);
+                    Transform roundButtonBase1 = bInteractable.transform.parent.Find("roundButtonBase");
+                    roundButtonBase1.localPosition = new Vector3(-141f, -62f, -3f);
+                    LoadoutConfigurator config = Resources.FindObjectsOfTypeAll<LoadoutConfigurator>()[0];
+                    VehicleConfigSceneSetup setup = Resources.FindObjectsOfTypeAll<VehicleConfigSceneSetup>()[0];
+                    Traverse setupHelper = Traverse.Create(setup);
+                    bInteractable.OnInteract.AddListener(delegate
                     {
-                        if (LOL.path.ToLower() == "abomber")
-                            LOL.path = "afighter";
-                        else if (LOL.path.ToLower() == "afighter")
-                            LOL.path = "asf-30";
-                        else if (LOL.path.ToLower() == "asf-30")
-                            LOL.path = "asf-33";
-                        else if (LOL.path == "asf-33")
-                            LOL.path = "ebomber";
-                        else if (LOL.path.ToLower() == "ebomber")
-                            LOL.path = "eucav";
-                        else if (LOL.path.ToLower() == "eucav")
-                            LOL.path = "f45a";
-                        else if (LOL.path.ToLower() == "f45a")
-                            LOL.path = "gav-25";
-                        else if (LOL.path.ToLower() == "gav-25")
-                            LOL.path = "j4";
-                        else if (LOL.path.ToLower() == "j4")
-                            LOL.path = "mq-31";
-                        else if (LOL.path.ToLower() == "mq-31")
-                            LOL.path = "vtol";
-                        else if (LOL.path.ToLower() == "vtol")
-                            LOL.path = "abomber";
-                        LOL.text.text = "Weapons: " + LOL.path;
-                        Debug.Log(LOL.path + " is LOL.path");
-                        LOL.buttonMade = true;
-                        VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<WeaponManager>().resourcePath = "hpequips/" + LOL.path;
-                        LoadoutConfigurator config = Resources.FindObjectsOfTypeAll<LoadoutConfigurator>()[0];
+                        if (config == null)
+                            config = Resources.FindObjectsOfTypeAll<LoadoutConfigurator>()[0];
+                        switch (AEAT.path.ToLower())
+                        {
+                            case "abomber":
+                                AEAT.path = "afighter";
+                                break;
+                            case "afighter":
+                                AEAT.path = "asf-30";
+                                break;
+                            case "asf-30":
+                                AEAT.path = "asf-33";
+                                break;
+                            case "asf-33":
+                                AEAT.path = "ebomber";
+                                break;
+                            case "ebomber":
+                                AEAT.path = "eucav";
+                                break;
+                            case "eucav":
+                                AEAT.path = "f45a";
+                                break;
+                            case "f45a":
+                                AEAT.path = "gav-25";
+                                break;
+                            case "gav-25":
+                                AEAT.path = "j4";
+                                break;
+                            case "j4":
+                                AEAT.path = "mq-31";
+                                break;
+                            case "mq-31":
+                                AEAT.path = "vtol";
+                                break;
+                            case "vtol":
+                                AEAT.path = "abomber";
+                                break;
+                            default:
+                                Debug.LogWarning("Uncaught case in vehicle switcher: " + AEAT.path);
+                                AEAT.path = "vtol";
+                                break;
+                        }
+                        //text.text = "Weapons: " + AEAT.path;
+                        bInteractable.interactableName = "Switch vehicle weapons\n (Current Weapons: " + AEAT.path + ")";
+                        Debug.Log(AEAT.path + " is AEAT.path");
+                        //Debug.Log(text.text + " is weapons text");
+                        VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<WeaponManager>().resourcePath = "hpequips/" + AEAT.path;
                         config.wm.resourcePath = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<WeaponManager>().resourcePath;
-                        Debug.Log(LOL.path);
-                        PilotSaveManager.currentVehicle.equipsResourcePath = "hpequips/" + LOL.path;
+                        Debug.Log(AEAT.path);
+                        PilotSaveManager.currentVehicle.equipsResourcePath = "hpequips/" + AEAT.path;
                         List<string> marsh = new List<string>();
                         List<GameObject> ketkev = new List<GameObject>();
                         Dictionary<string, EqInfo> lol = new Dictionary<string, EqInfo>();
-                        foreach (var gameobject in Resources.LoadAll<GameObject>("hpequips/" + LOL.path))
+                        foreach (var gameobject in Resources.LoadAll<GameObject>("hpequips/" + AEAT.path))
                         {
                             if (!AllowedEquips.allowedEquips.Contains(gameobject.name))
                             {
@@ -247,41 +296,181 @@ public static class patch0
                             }
                             marsh.Add(gameobject.name);
                             ketkev.Add(gameobject);
-                            lol.Add(gameobject.name, new EqInfo(gameobject, LOL.path));
                         }
                         config.availableEquipStrings = marsh;
                         PilotSaveManager.currentVehicle.allEquipPrefabs = ketkev;
                         Traverse.Create(config).Field("unlockedWeaponPrefabs").SetValue(new Dictionary<string, EqInfo>());
                         Traverse.Create(config).Field("allWeaponPrefabs").SetValue(new Dictionary<string, EqInfo>());
+                        config.lockedHardpoints = new List<int>(); // making sure all hardpoints are unlocked
                         for (int i = 0; i < config.wm.hardpointTransforms.Length; i++)
                         {
                             config.Detach(i);
                         }
-                        LOL.configInit = true;
                         config.Initialize(PilotSaveManager.current.GetVehicleSave(PilotSaveManager.currentVehicle.vehicleName).GetCampaignSave(PilotSaveManager.currentCampaign.campaignID), false);
                         if (config.fullInfo != null)
                         {
                             config.fullInfo.CloseInfo();
                         }
-                    }));
+                    });
+                    Debug.Log("Made right hand bottom button.");
+
+
+                    button = GameObject.Instantiate(bInteractable.gameObject, bInteractable.transform.parent);
+                    Debug.Log("Current vehicle name is " + PilotSaveManager.currentVehicle.name);
+                    button.transform.localPosition = new Vector3(147f, -62f, -3f);
+                    VRInteractable bInteractable2 = button.GetComponent<VRInteractable>();
+                    //Text text2 = button.GetComponentInChildren<Text>();
+                    //text2.transform.localScale = text2.transform.localScale * 0.75f;
+                    //text2.text = PilotSaveManager.currentVehicle.name;
+                    bInteractable2.interactableName = "Switch Vehicles";
+                    bInteractable2.OnInteract = new UnityEvent();
+                    foreach (var vehicle in VTResources.GetPlayerVehicles())
+                    {
+                        Debug.Log(vehicle.name);
+                        Debug.Log(vehicle.vehicleName);
+                    }
+                    bInteractable2.OnInteract.AddListener(delegate
+                    {
+                        if (PilotSaveManager.currentVehicle.name == "AV-42C")
+                        {
+                            PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F/A-26B");
+                        }
+                        else if (PilotSaveManager.currentVehicle.name == "FA-26B")
+                        {
+                            PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F-45A");
+                        }
+                        else
+                        {
+                            PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("AV-42C");
+                        }
+                        //text2.text = PilotSaveManager.currentVehicle.vehicleName;
+                        AEAT.selectedVehicle = PilotSaveManager.currentVehicle;
+                        if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
+                        {
+                            AEAT.buttonMade = false;
+                            Debug.Log("Resetting up scene.");
+                            SceneManager.LoadScene("VehicleConfiguration");
+                        }
+                    });
+                    Transform bigButton2 = GameObject.Instantiate(roundButtonBase1, roundButtonBase1.parent);
+                    bigButton2.localPosition = bInteractable2.transform.localPosition;
+                    AEAT.trueSave = PilotSaveManager.current.GetVehicleSave(PilotSaveManager.currentVehicle.vehicleName).GetCampaignSave(PilotSaveManager.currentCampaign.campaignID);
+                    Debug.Log("Made right hand top button, and true save's id is " + AEAT.trueSave.campaignID);
+
                     break;
                 }
             }
+            AEAT.buttonMade = true;
         }
         equip.allowedHardpoints = "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30";
         equip.unitCost = 0f;
         return true;
     }
 }
+
+[HarmonyPatch(typeof(VehicleSave), nameof(VehicleSave.GetCampaignSave))]
+public static class Patch_SpoofSave
+{
+    public static bool Prefix(ref CampaignSave __result, string campaignID)
+    {
+        if (!(VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration) || AEAT.trueSave == null)
+        {
+            //Debug.Log("Not spoofing this save.");
+            return true;
+        }
+        Debug.Log(AEAT.trueSave.campaignID + " will be used as a campaign save.");
+        __result = AEAT.trueSave;
+        if (!AEAT.buttonMade)
+        {
+            Debug.Log(AEAT.path + " is AEAT.path");
+            VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<WeaponManager>().resourcePath = "hpequips/" + AEAT.path;
+            LoadoutConfigurator config = Resources.FindObjectsOfTypeAll<LoadoutConfigurator>()[0];
+            config.wm.resourcePath = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<WeaponManager>().resourcePath;
+            PilotSaveManager.currentVehicle.equipsResourcePath = "hpequips/" + AEAT.path;
+            List<string> marsh = new List<string>();
+            List<GameObject> ketkev = new List<GameObject>();
+            foreach (var gameobject in Resources.LoadAll<GameObject>("hpequips/" + AEAT.path))
+            {
+                if (!AllowedEquips.allowedEquips.Contains(gameobject.name))
+                {
+                    //Debug.Log("Unauthorized gameobject " + gameobject.name);
+                    continue;
+                }
+                marsh.Add(gameobject.name);
+                ketkev.Add(gameobject);
+            }
+            Traverse.Create(config).Field("unlockedWeaponPrefabs").SetValue(new Dictionary<string, EqInfo>());
+            Traverse.Create(config).Field("allWeaponPrefabs").SetValue(new Dictionary<string, EqInfo>());
+            config.lockedHardpoints = new List<int>();
+            VTResources.GetScenario(PilotSaveManager.currentScenario.scenarioID, PilotSaveManager.currentCampaign).allowedEquips = marsh;
+            __result.availableWeapons = marsh;
+            Debug.Log("Set allowedEquips.");
+            PilotSaveManager.currentVehicle.allEquipPrefabs = ketkev; // Don't need to reinit the config because this is prefixing the init statement
+        }
+        return false;
+    }
+}
+
 [HarmonyPatch(typeof(PlayerVehicleSetup), "SetupForFlight")]
 public static class patch1
 {
     public static bool Prefix(PlayerVehicleSetup __instance)
     {
-        __instance.gameObject.GetComponent<WeaponManager>().resourcePath = "hpequips/" + LOL.path;
+        if (PilotSaveManager.currentScenario.equipConfigurable == false)
+            return true;
+        __instance.gameObject.GetComponent<WeaponManager>().resourcePath = "hpequips/" + AEAT.path;
         return true;
     }
 }
+
+[HarmonyPatch(typeof(EndMission), "CompleteMission")]
+public static class Patch_EnsureScenarioComplete
+{
+    public static bool Prefix()
+    {
+        if (PilotSaveManager.currentScenario.equipConfigurable == false)
+            return true;
+        if (AEAT.trueSave == null)
+            Debug.LogError("True save is null.");
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(AEAT.trueSave.vehicleName);
+        Debug.Log("Current scenarioID is: " + PilotSaveManager.currentScenario.scenarioID + " campaignID is " + PilotSaveManager.currentCampaign.campaignID + " and name is " + PilotSaveManager.currentVehicle.name + " and campaign name is " + PilotSaveManager.currentCampaign.campaignName);
+        bool gotAnything = false;
+        if (PilotSaveManager.current.GetVehicleSave(PilotSaveManager.currentVehicle.vehicleName) != null)
+            Debug.Log("Got the vehicle save, pog?");
+        else
+            Debug.Log("No save not pog.");
+        if (PilotSaveManager.current.GetVehicleSave(PilotSaveManager.currentVehicle.vehicleName).GetCampaignSave(PilotSaveManager.currentCampaign.campaignID) != null)
+            Debug.Log("welp that wasn't null.");
+        else
+            Debug.Log("Campaign save is null.");
+        Debug.Log((bool)Traverse.Create(EndMission.instance).Field("done").GetValue() + " is done.");
+        foreach (CampaignSave campaignSave in PilotSaveManager.current.GetVehicleSave(PilotSaveManager.currentVehicle.vehicleName).campaignSaves)
+        {
+            if (campaignSave.campaignID == PilotSaveManager.currentCampaign.campaignID)
+            {
+                Debug.Log("Got campaign id at least.");
+                gotAnything = true;
+                foreach (CampaignSave.CompletedScenarioInfo completedScenarioInfo in campaignSave.completedScenarios)
+                {
+                    if (completedScenarioInfo.scenarioID == PilotSaveManager.currentScenario.scenarioID)
+                    {
+                        Debug.Log("Got both?");
+                        gotAnything = true;
+                    }
+                    else
+                        Debug.Log("ScenarioID " + completedScenarioInfo.scenarioID);
+
+                }
+            }
+            else
+                Debug.Log("Campaign name " + campaignSave.campaignName + " CampaignID " + campaignSave.campaignID);
+        }
+        if (!gotAnything)
+            Debug.Log("Got nothing rip.");
+        return true;
+    }
+}
+
 [HarmonyPatch(typeof(SMSInternalWeaponAnimator), "UpdateCurrentProfile")]
 public static class patch2
 {
@@ -292,20 +481,23 @@ public static class patch2
         return Traverse.Create(__instance).Field("currProfile").GetValue() != null;
     }
 }
+
 [HarmonyPatch(typeof(ReArmingPoint), "FinalBeginReArm")]
 public static class patch3
 {
     public static void Postfix(RearmingUnitSpawn __instance)
     {
-        VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<WeaponManager>().resourcePath = "hpequips/" + LOL.path;
+        if (PilotSaveManager.currentScenario.equipConfigurable == false)
+            return;
+        VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<WeaponManager>().resourcePath = "hpequips/" + AEAT.path;
         LoadoutConfigurator config = (LoadoutConfigurator)Traverse.Create(__instance).Field("config").GetValue();
         config.wm.resourcePath = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<WeaponManager>().resourcePath;
-        Debug.Log(LOL.path);
-        PilotSaveManager.currentVehicle.equipsResourcePath = "hpequips/" + LOL.path;
+        Debug.Log(AEAT.path);
+        PilotSaveManager.currentVehicle.equipsResourcePath = "hpequips/" + AEAT.path;
         List<string> marsh = new List<string>();
         List<GameObject> ketkev = new List<GameObject>();
         Dictionary<string, EqInfo> lol = new Dictionary<string, EqInfo>();
-        foreach (var gameobject in Resources.LoadAll<GameObject>("hpequips/" + LOL.path))
+        foreach (var gameobject in Resources.LoadAll<GameObject>("hpequips/" + AEAT.path))
         {
             if (!AllowedEquips.allowedEquips.Contains(gameobject.name))
             {
@@ -314,13 +506,12 @@ public static class patch3
             }
             marsh.Add(gameobject.name);
             ketkev.Add(gameobject);
-            lol.Add(gameobject.name, new EqInfo(gameobject, LOL.path));
+            lol.Add(gameobject.name, new EqInfo(gameobject, AEAT.path));
         }
         config.availableEquipStrings = marsh;
         PilotSaveManager.currentVehicle.allEquipPrefabs = ketkev;
         Traverse.Create(config).Field("unlockedWeaponPrefabs").SetValue(new Dictionary<string, EqInfo>());
         Traverse.Create(config).Field("allWeaponPrefabs").SetValue(new Dictionary<string, EqInfo>());
-        LOL.configInit = true;
         config.Initialize(PilotSaveManager.current.GetVehicleSave(PilotSaveManager.currentVehicle.vehicleName).GetCampaignSave(PilotSaveManager.currentCampaign.campaignID), false);
         if (config.fullInfo != null)
         {
@@ -328,7 +519,22 @@ public static class patch3
         }
     }
 }
-public static class AllowedEquips
+
+[HarmonyPatch(typeof(PlayerSpawn), "OnPreSpawnUnit")]
+class Patch_OnPreSpawnUnit // i yoinked the name and stuff from mp, but the actual code isn't 
+{
+    public static bool Prefix(PlayerSpawn __instance)
+    {
+        if (AEAT.selectedVehicle != null)
+        {
+            PilotSaveManager.currentVehicle = AEAT.selectedVehicle;
+            VTScenario.current.vehicle = AEAT.selectedVehicle;
+        }
+        return true;
+    }
+}
+
+public static class AllowedEquips // THIS IS A THICC BOI
 {
     public static string[] allowedEquips = {
         "abomber_agm89x2",

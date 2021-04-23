@@ -24,7 +24,7 @@ public class infAmmo : MonoBehaviour
             {
                 if (equip is HPEquipGun)
                 {
-                    if (((HPEquipGun)wm.currentEquip).gun == null)
+                    if (((HPEquipGun)equip).gun == null)
                     {
                         Debug.LogError("Gun is null on HPEQUIP " + equip.name);
                         continue;
@@ -41,6 +41,7 @@ public class infAmmo : MonoBehaviour
                     ((HPEquipMissileLauncher)equip).ml.LoadAllMissiles();
                 }
             }
+            equip.Equip();
         }
     }
     public WeaponManager wm;
