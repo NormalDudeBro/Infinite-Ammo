@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using System.Reflection;
+﻿using UnityEngine;
 using Harmony;
 
-public class infAmmo : MonoBehaviour
+public class InfiniteAmmo : MonoBehaviour
 {
     private void Awake()
     {
@@ -18,7 +11,7 @@ public class infAmmo : MonoBehaviour
     {
         if (!wm.isMasterArmed)
             return;
-        foreach (var equip in wm.GetCombinedEquips())
+        foreach (HPEquippable equip in (HPEquippable[])Traverse.Create(wm).Field("equips").GetValue())
         {
             if (equip != null)
             {
@@ -40,9 +33,10 @@ public class infAmmo : MonoBehaviour
                 {
                     ((HPEquipMissileLauncher)equip).ml.LoadAllMissiles();
                 }
+                //equip.Equip();
             }
-            equip.Equip();
         }
     }
     public WeaponManager wm;
+    private Traverse wmTraverse;
 }
