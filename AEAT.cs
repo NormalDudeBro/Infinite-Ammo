@@ -28,13 +28,12 @@ class AEAT : VTOLMOD
         //SetupMFDSOld(playerVehicle);
     }
 
-    public static void SetupMFDSOld(GameObject playerVehicle, InfiniteAmmo inf, PairedGuns pairedGuns)
+    public static void SetupMFDSOld(GameObject playerVehicle, InfiniteAmmo inf)
     {
         buttonMade = false;
         Debug.Log("AAAAAAAA");
         wm = playerVehicle.GetComponent<WeaponManager>();
         inf.enabled = false;
-        pairedGuns.enabled = false;
         MFD lastMFD = null;
         MFDPage mfdPage = null;
         if (VTOLAPI.GetPlayersVehicleEnum() != VTOLVehicles.F45A)
@@ -63,32 +62,17 @@ class AEAT : VTOLMOD
                 {
                     Debug.LogError("FOUND YA!");
                 }
-                MFDPage.MFDButtonInfo newButton2 = new MFDPage.MFDButtonInfo();
-                newButton2.button = MFD.MFDButtons.T2;
-                newButton2.toolTip = "Pair all guns";
-                newButton2.label = "pairGuns";
-                newButton2.OnPress.AddListener(delegate
-                {
-                    pairedGuns.enabled = !pairedGuns.enabled;
-                    Debug.Log("Paired button pressed.");
-                    mfdPage.mfd.buttons[11].GetComponentInChildren<Text>().color = pairedGuns.enabled && wm.equippedGun ? Color.green : Color.red;
-                });
                 mfdPage.SetPageButton(newButton);
-                mfdPage.SetPageButton(newButton2);
-                mfdPage.mfd.buttons[13].GetComponentInChildren<Text>().color = inf.enabled ? Color.green : Color.red;
-                mfdPage.mfd.buttons[11].GetComponentInChildren<Text>().color = pairedGuns.enabled ? Color.green : Color.red;
+                mfdPage.mfd.buttons[13].GetComponentInChildren<Text>().color = inf.enabled ? Color.green : Color.red;;
             });
             AEATDebugLogger.Log("Activate page");
             Text mfdButtonText13 = lastMFD.buttons[13].GetComponentInChildren<Text>();
-            AEATDebugLogger.Log("Text13");
-            Text mfdButtonText11 = lastMFD.buttons[11].GetComponentInChildren<Text>();
             AEATDebugLogger.Log("Text11");
             mfdPage.OnDeactivatePage.AddListener(delegate
             {
                 if (lastMFD != null)
                 {
                     mfdButtonText13.color = Color.white;
-                    mfdButtonText11.color = Color.white;
                     lastMFD = null;
                 }
             });
@@ -138,29 +122,6 @@ class AEAT : VTOLMOD
             Debug.Log("listener");
             text1.color = inf.enabled ? Color.green : Color.red;
 
-            GameObject emptyButton2 = Instantiate(toCopy, MFPDM.displayObj.gameObject.transform);
-            RectTransform rt2 = emptyButton2.GetComponent<RectTransform>();
-            rt2.localPosition = new Vector3(rt2.localPosition.x - 85, rt.localPosition.y, rt.localPosition.z);
-            rt2.localScale = new Vector3(rt2.localScale.x * 0.85f, rt2.localScale.y * 0.85f, rt2.localScale.z * 0.85f);
-            rt2.GetComponentInChildren<Image>().color = Color.black;
-            Debug.Log("instantiate");
-            VRInteractable interactable2 = emptyButton2.GetComponentInChildren<VRInteractable>();
-            Debug.Log("vr interactable");
-            Text text2 = emptyButton2.GetComponentInChildren<Text>();
-            Debug.Log("text");
-            text2.text = "pairGuns";
-            Debug.Log("pairGuns");
-            interactable2.OnInteract = new UnityEvent();
-            Debug.Log("new UnityEvent()");
-            interactable2.interactableName = "Pair All Guns";
-            Debug.Log("Pair all guns");
-            interactable2.OnInteract.AddListener(delegate
-            {
-                pairedGuns.enabled = !pairedGuns.enabled;
-                MFDP.PlayInputSound();
-                text2.color = pairedGuns.enabled ? Color.green : Color.red;
-            });
-            text2.color = pairedGuns.enabled ? Color.green : Color.red;
         }
         Debug.Log("AEAT Done setting up MFDS.");
     }
