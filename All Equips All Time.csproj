@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{93E58961-6D55-413A-9858-088DA4EEAED4}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>All_Equips_All_Time</RootNamespace>
-    <AssemblyName>AEAT</AssemblyName>
+    <RootNamespace>Infinite_Ammo</RootNamespace>
+    <AssemblyName>INFA</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -41,17 +41,17 @@
     </Reference>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Vidjagames\Steam\steamapps\common\VTOL VR\VTOLVR_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\common\VTOL VR\VTOLVR_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Facepunch.Steamworks.Win64">
-      <HintPath>D:\Vidjagames\Steam\steamapps\common\VTOL VR\VTOLVR_Data\Managed\Facepunch.Steamworks.Win64.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\common\VTOL VR\VTOLVR_Data\Managed\Facepunch.Steamworks.Win64.dll</HintPath>
     </Reference>
     <Reference Include="ModLoader">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VTOL VR\VTOLVR_ModLoader\ModLoader.dll</HintPath>
     </Reference>
     <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Vidjagames\steamapps\common\VTOL VR\VTOLVR_Data\Managed\netstandard.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\common\VTOL VR\VTOLVR_Data\Managed\netstandard.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -73,7 +73,7 @@
     </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Vidjagames\Steam\steamapps\common\VTOL VR\VTOLVR_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\common\VTOL VR\VTOLVR_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\VTOL VR\VTOLVR_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
@@ -93,7 +93,6 @@
     <Compile Include="AEATDebugLogger.cs" />
     <Compile Include="Components\AEAT F45 Page.cs" />
     <Compile Include="Components\AEAT MFD Page.cs" />
-    <Compile Include="Components\bigRPM.cs" />
     <Compile Include="CustomLoadout.cs" />
     <Compile Include="EquipConstants.cs" />
     <Compile Include="Harmony Patches\LoadoutConfigurator Patches.cs" />
@@ -105,7 +104,6 @@
     <Compile Include="Harmony Patches\VehicleSave Patches.cs" />
     <Compile Include="Harmony Patches\WeaponManager Patches.cs" />
     <Compile Include="Components\InfiniteAmmo.cs" />
-    <Compile Include="Components\pairedGuns.cs" />
     <Compile Include="AEAT.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -114,7 +112,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy  "$(ProjectDir)bin\Debug\$(TargetName).dll" "D:\Vidjagames\Steam\steamapps\common\VTOL VR\MyStuff\My Mods\AEAT\Builds\" /Y
-xcopy  "$(ProjectDir)bin\Debug\$(TargetName).dll" "D:\Vidjagames\Steam\steamapps\common\VTOL VR\VTOLVR_ModLoader\mods\All_Equips_All_Time\" /Y</PostBuildEvent>
+    <PostBuildEvent>copy  "$(ProjectDir)bin\Debug\$(TargetName).dll" "D:\SteamLibrary\steamapps\common\VTOL VR\MyStuff\My Mods\INFA\Builds\" /Y
+xcopy  "$(ProjectDir)bin\Debug\$(TargetName).dll" "D:\SteamLibrary\steamapps\common\VTOL VR\VTOLVR_ModLoader\mods\Infinite_Ammo\" /Y</PostBuildEvent>
   </PropertyGroup>
 </Project>
